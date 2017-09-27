@@ -1,0 +1,81 @@
+﻿@using System.Globalization
+@using System.Reflection.PortableExecutable
+@using Transporter.Utils
+@model Transporter.Models.Pages.RouteResultPage
+@{
+    var perRow = 3;
+    var i = 0;
+    var rows = @Model.Routes.Split(3);
+}
+
+
+<div class="container">
+
+    @foreach (var row in rows)
+    {
+        <div class="row">
+
+            @foreach (var route in row)
+            {
+                i += 1;
+                <div class="col-lg-4 col-sm-12">
+                    @{
+                        var startTime = route.legs.FirstOrDefault()?.locs.FirstOrDefault()?.depTime.GetLast(4).Insert(2, ".");
+                        var endTime = route.legs.LastOrDefault()?.locs.LastOrDefault()?.arrTime.GetLast(4).Insert(2, ".");
+                    }
+
+                    <h3>Reitti @i</h3>
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td>Kesto</td>
+                            <td>@TimeSpan.FromSeconds(route.duration).ToString("g")</td>
+                        </tr>
+                        <tr>
+                            <td>Osuuksia</td>
+                            <td>@route.legs.Length</td>
+                        </tr>
+                        <tr>
+                            <td>Pituus</td>
+                            <td>@Math.Round(route.length/1000, 2)km </td>
+                        </tr>
+                        <tr>
+                            <td>Lähtö</td>
+                            <td>@startTime </td>
+                        </tr>
+                        <tr>
+                            <td>Perillä</td>
+                            <td>@endTime </td>
+                        </tr>
+                        @foreach (var leg in route.legs)
+                        {
+                            <tr>
+                                <td><strong>@TransportMethodResolver.GetFriendlyName(leg.type)</strong></td>
+                                <td>
+                                    <ul class="list-unstyled">
+                                        <li>
+                                            Pituus: @Math.Round((decimal) leg.length/1000, 2)km
+                                        </li>
+                                        <li>
+                                            Kesto: @TimeSpan.FromSeconds(leg.duration).ToString("g")
+                                        </li>
+                                        @if (!string.IsNullOrEmpty(leg.shortCode))
+                                        {
+                                            <li>
+                                                Numero: @leg.shortCode
+                                            </li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+    </div>
+    }
+
+</div>
