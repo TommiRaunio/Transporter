@@ -32,10 +32,7 @@ namespace Transporter.Services.HSL
 
         public async Task<List<HSLRoute>> GetRoute(LocationEnum from, LocationEnum to)
         {
-            
-            List<HSLRoute> listOfRoutes = null;
-
-            if (!_cache.TryGetValue(CacheKeyFor(from, to), out listOfRoutes))
+            if (!_cache.TryGetValue(CacheKeyFor(from, to), out List<HSLRoute> listOfRoutes))
             {
                 listOfRoutes = await GetRouteFromHsl(from, to);
                 _cache.Set(CacheKeyFor(from, to), listOfRoutes, new MemoryCacheEntryOptions()); // Define options
@@ -46,14 +43,10 @@ namespace Transporter.Services.HSL
 
         private async Task<List<HSLRoute>> GetRouteFromHsl(LocationEnum from, LocationEnum to)
         {
-            string routeResponse;
-            List<HSLRoute> listOfRoutes;
+            var routeResponse = await _connector.GetRoute(HslCoordinateBank.GetCoordinatesFor(@from), HslCoordinateBank.GetCoordinatesFor(to));
+            var listOfRoutes = ParseRouteInformationFromJSON(@from, to, routeResponse);
 
-
-            routeResponse = await _connector.GetRoute(HslCoordinateBank.GetCoordinatesFor(from), HslCoordinateBank.GetCoordinatesFor(to));
-            listOfRoutes = ParseRouteInformationFromJSON(from, to, routeResponse);
-
-            if (listOfRoutes.Any())
+            if (listOfRoutes != null && listOfRoutes.Any())
             {
                 var tasks = new List<Task>();
 

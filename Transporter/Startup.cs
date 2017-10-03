@@ -9,12 +9,16 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Transporter
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IHslConnector, HslConnector>();
@@ -25,16 +29,11 @@ namespace Transporter
 
             services.AddMemoryCache();
 
-            var builder = new ConfigurationBuilder();
-
-            builder.AddUserSecrets<Startup>();
-            Configuration = builder.Build();
-
             services.AddOptions();
-            services.Configure<HslSettings>(Configuration.GetSection("HSLSettings"));
+            services.Configure<HslSettings>(Configuration);
         }
 
-        public IConfigurationRoot Configuration { get; set; }
+        public IConfiguration Configuration { get; set; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -49,6 +48,7 @@ namespace Transporter
                    name: "default",
                    template: "{controller=Home}/{action=Index}/{id?}");
            });
+
 
             //Domain specific initialization
             AddCoordinates();
